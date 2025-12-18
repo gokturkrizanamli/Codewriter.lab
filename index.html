@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CodeWriter Lab</title>
+  <style>
+    body{font-family:Arial;margin:0;background:#0b0f17;color:#e9eefc}
+    header{padding:18px 22px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;gap:14px;align-items:center;justify-content:space-between}
+    .brand{font-weight:700}
+    .wrap{display:grid;grid-template-columns:1.3fr .7fr;gap:14px;padding:14px}
+    .card{background:#111a2a;border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden}
+    .toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.08)}
+    select,button{border-radius:10px;border:1px solid rgba(255,255,255,.12);background:#0b0f17;color:#e9eefc;padding:10px 12px}
+    button{cursor:pointer}
+    #editor{height:520px}
+    #output{padding:12px;white-space:pre-wrap;min-height:220px}
+    .muted{opacity:.75;font-size:13px}
+    a{color:#9cc3ff}
+    @media (max-width: 980px){
+      .wrap{grid-template-columns:1fr}
+      #editor{height:420px}
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs/loader.js"></script>
+</head>
+<body>
+  <header>
+    <div class="brand">CodeWriter Lab</div>
+    <div class="muted">Abonelik: 80 TL/ay • 14 gün ücretsiz (yakında)</div>
+  </header>
+
+  <div class="wrap">
+    <div class="card">
+      <div class="toolbar">
+        <div style="display:flex;gap:10px;align-items:center">
+          <label class="muted">Dil:</label>
+          <select id="lang">
+            <option value="html">HTML</option>
+            <option value="javascript">JavaScript</option>
+            <option value="python">Python (yakında)</option>
+            <option value="csharp">C# (Unity) (yakında)</option>
+            <option value="cpp">Arduino/C++ (yakında)</option>
+          </select>
+        </div>
+        <button id="runBtn">Çalıştır</button>
+      </div>
+      <div id="editor"></div>
+    </div>
+
+    <div class="card">
+      <div class="toolbar">
+        <div class="muted">Çıktı / Önizleme</div>
+        <div class="muted">Şimdilik: HTML çalışır</div>
+      </div>
+
+      <iframe id="preview" style="width:100%;height:260px;border:0;background:#fff"></iframe>
+      <div id="output"></div>
+
+      <div style="padding:12px" class="muted">
+        Not: Python/Arduino/Unity/Godot çalıştırma için backend (sunucu) kurulacak.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let editor;
+    const templates = {
+      html: `<!doctype html>
+<html>
+  <body>
+    <h2>Merhaba CodeWriter Lab!</h2>
+    <p>Bu alan HTML önizleme.</p>
+  </body>
+</html>`,
+      javascript: `console.log("Merhaba! (JS şimdilik çıktı alanında gösteriliyor)")`,
+      python: `print("Python çalıştırma yakında eklenecek")`,
+      csharp: `// Unity C# - yakında`,
+      cpp: `// Arduino/C++ - yakında`
+    };
+
+    require.config({ paths: { 'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.34.1/min/vs' }});
+    require(['vs/editor/editor.main'], function() {
+      editor = monaco.editor.create(document.getElementById('editor'), {
+        value: templates.html,
+        language: 'html',
+        theme: 'vs-dark',
+        fontSize: 15,
+        minimap: { enabled: false }
+      });
+    });
+
+    const langSel = document.getElementById('lang');
+    const runBtn = document.getElementById('runBtn');
+    const out = document.getElementById('output');
+    const preview = document.getElementById('preview');
+
+    function setLanguage(lang){
+      out.textContent = "";
+      preview.srcdoc = "";
+      editor.setValue(templates[lang] || "");
+      monaco.editor.setModelLanguage(editor.getModel(), lang === "python" ? "python" : lang);
+    }
+
+    langSel.addEventListener('change', e => setLanguage(e.target.value));
+
+    runBtn.addEventListener('click', () => {
+      const lang = langSel.value;
+      const code = editor.getValue();
+      out.textContent = "";
+      if(lang === "html"){
+        preview.srcdoc = code;
+        out.textContent = "HTML çalıştırıldı.";
+      } else if(lang === "javascript"){
+        out.textContent = "JS kodu: \n\n" + code;
+      } else {
+        out.textContent = lang.toUpperCase() + " çalıştırma yakında.";
+      }
+    });
+  </script>
+</body>
+</html>
